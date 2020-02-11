@@ -1,6 +1,7 @@
 import Usuario from '../models/Usuario'
 import Pessoa from '../models/Pessoa'
 import Funcao from '../models/Funcao'
+import Mail from '../../lib/Mail'
 
 import * as Yup from 'yup'
 
@@ -19,10 +20,11 @@ class UsuarioController {
           {
             model: Funcao,
             as: 'funcao',
-            attributes: ['codigo']
+            attributes: ['nome']
           }
         ]
       })
+
 
     return res.json(usuarios)
   }
@@ -35,7 +37,45 @@ class UsuarioController {
       return res.status(401).json({ erro: 'Não existe essa pessoa' })
     }
 
+    if (req.body.funcao_id) {
+      const existeFuncao = await Funcao.findByPk(req.body.funcao_id)
+
+      if (!existeFuncao) {
+        return res.status(401).json({ erro: 'Essa funcao não existe' })
+      }
+    }
+
+    const existeCodigo = await Usuario.findOne({
+      where: { codigo: req.body.codigo }
+    })
+
+    if (existeCodigo) {
+      return res.status(401).json({ erro: 'Já existe um usuário com esse código' })
+    }
+
+    const existeUsuarioComIdPessoa = await Usuario.findOne({
+      where: { pessoa_id: req.body.pessoa_id }
+    })
+
+    if (existeUsuarioComIdPessoa) {
+      return res.status(401).json({ erro: 'Já existe um usuário com o id dessa pessoa' })
+    }
+
     const { id, ativo, codigo } = await Usuario.create(req.body)
+
+    await Mail.sendMail({
+      to: `${existePessoa.nome} <${existePessoa.email}>`,
+      subject: 'Usuário criado',
+      template: 'creacaoUsuario',
+      context: {
+        usuario: existePessoa.nome,
+        user: existePessoa.nome
+        //date: format(appointment.date, "'dia' dd 'de' MMMM', às' H:mm'h'",
+        //{ locale: pt }
+        //)
+      }
+    })
+
     return res.json({
       id,
       ativo,
@@ -48,6 +88,7 @@ class UsuarioController {
     const schema = Yup.object().shape({
       ativo: Yup.boolean(),
       codigo: Yup.string(),
+      funcao_id: Yup.number()
     })
 
     if (!(await schema.isValid(req.body))) {
@@ -59,10 +100,17 @@ class UsuarioController {
       return res.status(401).json({ erro: 'Usuário não existe ' })
     }
 
-    const { ativo, codigo } = await usuario.update(req.body)
+    const existeFuncao = await Funcao.findByPk(req.body.funcao_id)
+
+    if (!existeFuncao) {
+      return res.status(401).json({ erro: 'Essa funcao não existe' })
+    }
+
+
+    const { ativo, codigo, funcao_id } = await usuario.update(req.body)
 
     return res.status(200).json({
-      ativo, codigo
+      ativo, codigo, funcao_id
     })
 
   }

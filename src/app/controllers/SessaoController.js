@@ -12,7 +12,9 @@ class SessaoController {
 
     const { email, senha } = req.body
 
-    const pessoa = await Pessoa.findOne({ email: { email } })
+    const pessoa = await Pessoa.findOne({
+      where: { email: email }
+    })
 
     if (!pessoa) {
       return res.status(401).json({ erro: 'Pessoa não existe' })

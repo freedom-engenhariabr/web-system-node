@@ -1,12 +1,19 @@
 import * as Yup from 'yup'
 
 import Empresa from '../models/Empresa'
+import Funcao from '../models/Funcao'
 
 class EmpresaController {
 
   async index(req, res) {
     const empresas = await Empresa.findAll({
-      attributes: ['id', 'nome', 'codigo', 'ativo', 'cnpj']
+      attributes: ['id', 'nome', 'codigo', 'ativo', 'cnpj'],
+      include: [
+        {model: Funcao,
+          as: 'funcoes',
+          attributes: ['id', 'nome', 'codigo']
+        }
+      ]
     })
 
     return res.status(200).json(empresas)

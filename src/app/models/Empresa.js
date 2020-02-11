@@ -14,6 +14,10 @@ class Empresa extends Model {
       })
     return this
   }
+  static associate(models) {
+    this.hasMany(models.Funcao, { as: 'funcoes' })
+
+  }
 }
 
 export default Empresa

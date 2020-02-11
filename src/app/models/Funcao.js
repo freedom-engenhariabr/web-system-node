@@ -4,13 +4,12 @@ class Funcao extends Model {
   static init(sequelize) {
     super.init({
       nome: Sequelize.STRING,
-      codigo: Sequelize.STRING,
-      empresa_id: Sequelize.INTEGER
+      codigo: Sequelize.STRING
     },
-    {
-      sequelize,
-      tableName: 'funcoes'
-    })
+      {
+        sequelize,
+        tableName: 'funcoes'
+      })
     return this
   }
 
